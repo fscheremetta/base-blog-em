@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "react-query";
 
 import { PostDetail } from "./PostDetail";
 const maxPostPage = 10;
@@ -15,7 +16,32 @@ export function Posts() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   // replace with useQuery
-  const data = [];
+  const { data, isLoading, isError, error } = useQuery("posts", fetchPosts, {
+    staleTime: 2000,
+  });
+  //staleTime is for re-fetching
+
+  //cache is for data that might be re used later
+  //   query goes into cold storage if no active useQuery
+  //   cache data expires after cacheTime (default: five minutes)
+  //      how long its been since the last active useQuery
+  //   after the cache expires, the data is garbage collected
+  //   cache is backup data to display while fetching
+
+  //isFetching: the async query function hasnt yet resolved
+  //isLoading no cached data, plus isFetching
+
+  //by default, query tries 3 times before isError
+
+  if (!data || isLoading) return <h3>Loading...</h3>;
+
+  if (isError)
+    return (
+      <>
+        <h3>Oops, something went wrong</h3>
+        <p>{error.toString()}</p>
+      </>
+    );
 
   return (
     <>
@@ -24,8 +50,7 @@ export function Posts() {
           <li
             key={post.id}
             className="post-title"
-            onClick={() => setSelectedPost(post)}
-          >
+            onClick={() => setSelectedPost(post)}>
             {post.title}
           </li>
         ))}
